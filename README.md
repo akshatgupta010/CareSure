@@ -1,4 +1,4 @@
-# Medic Support
+## CareSure
 
 AI-assisted medical insurance claim validation prototype built with React + Vite.
 
