@@ -1,0 +1,7 @@
+claim_id,patient_id,encounter_id,service_date,record_type,description,billed_amount
+CLM-1001,PAT-881,ENC-901,2026-10-12,procedure,Appendectomy,0.0
+CLM-1001,PAT-881,ENC-901,2026-10-12,billing,Appendectomy,1500.00
+CLM-1001,PAT-881,ENC-901,2026-10-12,billing,CT Scan,450.00
+CLM-1002,PAT-882,ENC-902,2026-10-12,clinical,Blood Panel,0.0
+CLM-1002,PAT-882,ENC-902,2026-10-12,billing,Blood Panel,120.00
+CLM-1002,PAT-882,ENC-902,2026-10-12,billing,Blood Panel,120.00
