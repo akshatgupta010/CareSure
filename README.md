@@ -1,13 +1,15 @@
 # CareSure
 
-CareSure is a React and Vite prototype for reviewing medical insurance claim records. The New Claim flow parses an uploaded CSV in the browser, sends its rows to a FastAPI audit endpoint, and displays the returned risk levels and discrepancies in the Human Review Queue.
+CareSure is a React and Vite prototype for reviewing medical insurance claim records. The New Claim flow parses an uploaded CSV in the browser, sends its rows to an Express audit endpoint, and displays the returned risk levels and discrepancies in the Human Review Queue.
 
 > The CSV audit flow is connected to the backend. Other dashboard and individual claim views still contain prototype data. This project does not make automated approval, rejection, or fraud decisions.
 
-## Requirements
+## Project services
 
-- Node.js and npm
-- Python 3.10 or later
+- `frontend/`: React and Vite web application.
+- `backend/`: Express audit API, with its request handling split into routes, controllers, validators, and services.
+- `ai-service/`: FastAPI service scaffold with a health endpoint; AI/OCR/NLP/ML functionality is not implemented or connected to the audit flow yet.
+- `backend/prisma/schema.prisma`: PostgreSQL persistence schema scaffold; the current API does not persist data.
 
 ## Run locally
 
@@ -15,13 +17,11 @@ Start the backend in one terminal:
 
 ```powershell
 cd backend
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-python -m pip install fastapi uvicorn
-python -m uvicorn main:app --reload
+npm install
+npm run dev
 ```
 
-The API listens at `http://127.0.0.1:8000`. Its interactive documentation is available at `http://127.0.0.1:8000/docs`.
+The audit API listens at `http://127.0.0.1:8000`; check `http://127.0.0.1:8000/health` for its health status.
 
 Start the frontend in a second terminal:
 
@@ -31,7 +31,18 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The frontend currently sends audit requests to `http://127.0.0.1:8000/api/audit/batch`.
+Open the local URL printed by Vite. The frontend sends audit requests to `http://127.0.0.1:8000/api/audit/batch`.
+
+To run the FastAPI service locally, install `ai-service/requirements.txt` in a Python 3.10+ environment, then run:
+
+```powershell
+cd ai-service
+python -m uvicorn app.main:app --reload --port 8001
+```
+
+The AI-service health endpoint is at `http://127.0.0.1:8001/health`; interactive API documentation is at `http://127.0.0.1:8001/docs`.
+
+To build and start all three services with Docker Compose, run `docker compose up --build` from the project root. The frontend is available at `http://localhost:4173`, the audit API at `http://localhost:8000`, and the AI service at `http://localhost:8001`.
 
 ## Audit a claims CSV
 

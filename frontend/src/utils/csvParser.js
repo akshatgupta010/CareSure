@@ -31,7 +31,7 @@ export async function loadSyntheaCsv(filePath) {
 }
 
 /**
- * Normalizes raw Synthea or generic claim CSV rows to match the FastAPI RecordItem schema.
+ * Normalizes raw Synthea or generic claim CSV rows for the audit API.
  */
 export function normalizeClaimRecords(rawData) {
   return rawData.map((row, index) => ({
@@ -46,7 +46,7 @@ export function normalizeClaimRecords(rawData) {
 }
 
 /**
- * Sends parsed and normalized records directly to the live Python FastAPI backend.
+ * Sends parsed and normalized records to the Express audit API.
  */
 export async function sendClaimsToBackend(records) {
   const normalized = normalizeClaimRecords(records);

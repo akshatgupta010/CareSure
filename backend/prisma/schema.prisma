@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Claim {
+  id          String        @id @default(cuid())
+  claimId     String
+  patientId   String
+  encounterId String
+  createdAt   DateTime      @default(now())
+  records     ClaimRecord[]
+  audits      AuditResult[]
+
+  @@unique([claimId, patientId, encounterId])
+}
+
+model ClaimRecord {
+  id           String   @id @default(cuid())
+  claimId      String
+  serviceDate  String
+  recordType   String
+  description  String
+  billedAmount Decimal  @db.Decimal(12, 2)
+  claim        Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+model AuditResult {
+  id         String   @id @default(cuid())
+  claimId    String
+  riskLevel  String
+  status     String
+  findings   Json
+  createdAt  DateTime @default(now())
+  claim      Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId, createdAt])
+}
