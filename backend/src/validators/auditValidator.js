@@ -1,4 +1,4 @@
-const REQUIRED_STRING_FIELDS = [
+const REQUIRED_FIELDS = [
   "claim_id",
   "patient_id",
   "encounter_id",
@@ -7,46 +7,61 @@ const REQUIRED_STRING_FIELDS = [
   "description",
 ];
 
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+function toRequiredText(value) {
+  if (typeof value === "string" && value.trim() !== "") return value.trim();
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+}
+
+function toAmount(value) {
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && value.trim() !== "") return Number(value);
+  return NaN;
+}
+
 export function validateAndNormalizeRecords(records) {
   if (!Array.isArray(records)) {
     return { error: "Request body must be a JSON array of records." };
+  }
+
+  if (records.length === 0) {
+    return { error: "Request must include at least one record." };
   }
 
   const normalized = [];
 
   for (let index = 0; index < records.length; index += 1) {
     const raw = records[index];
+
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
       return { error: `Record at index ${index} must be an object.` };
     }
 
-    for (const field of REQUIRED_STRING_FIELDS) {
-      if (raw[field] === undefined || raw[field] === null) {
+    const fields = {};
+    for (const field of REQUIRED_FIELDS) {
+      const value = toRequiredText(raw[field]);
+      if (value === null) {
         return { error: `Missing required field '${field}' at index ${index}.` };
       }
+      fields[field] = value;
     }
 
-    const rawAmount = raw.billed_amount;
-    const billedAmount =
-      rawAmount === undefined || rawAmount === null || rawAmount === ""
-        ? 0
-        : Number(rawAmount);
-
-    if (!Number.isFinite(billedAmount)) {
+    if (!DATE_PATTERN.test(fields.service_date)) {
       return {
-        error: `Invalid 'billed_amount' at index ${index}: expected a number, got '${rawAmount}'.`,
+        error: `Invalid 'service_date' at index ${index}: expected YYYY-MM-DD.`,
       };
     }
 
-    normalized.push({
-      claim_id: String(raw.claim_id),
-      patient_id: String(raw.patient_id),
-      encounter_id: String(raw.encounter_id),
-      service_date: String(raw.service_date),
-      record_type: String(raw.record_type),
-      description: String(raw.description),
-      billed_amount: billedAmount,
-    });
+    const billedAmount = toAmount(raw.billed_amount);
+    if (!Number.isFinite(billedAmount)) {
+      return {
+        error: `Invalid 'billed_amount' at index ${index}: expected a number, got '${raw.billed_amount}'.`,
+      };
+    }
+
+    normalized.push({ ...fields, billed_amount: billedAmount });
   }
 
   return { data: normalized };

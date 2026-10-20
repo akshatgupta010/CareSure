@@ -1,3 +1,6 @@
 export function normalizeDescription(description) {
-  return description.trim().toLowerCase();
+  return String(description ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 }

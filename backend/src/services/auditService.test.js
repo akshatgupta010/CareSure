@@ -77,3 +77,49 @@ test("serves health and validates audit batch requests over HTTP", async () => {
     await once(server, "close");
   }
 });
+
+test("does not flag the same charge on different dates as duplicate", () => {
+  const [result] = auditRecords([
+    record({ service_date: "2026-01-01" }),
+    record({ service_date: "2026-01-02" }),
+    record({ record_type: "clinical", service_date: "2026-01-01" }),
+    record({ record_type: "clinical", service_date: "2026-01-02" }),
+  ]);
+
+  assert.equal(
+    result.discrepancies.some((d) => d.rule_id === "RULE_DUPLICATE_BILLING"),
+    false
+  );
+});
+
+test("reports the actual count when a charge repeats three times", () => {
+  const [result] = auditRecords([
+    record(),
+    record(),
+    record(),
+    record({ record_type: "clinical" }),
+  ]);
+
+  const duplicate = result.discrepancies.find(
+    (d) => d.rule_id === "RULE_DUPLICATE_BILLING"
+  );
+  assert.match(duplicate.reason, /3 times/);
+});
+
+test("flags an encounter whose records reference different claim ids", () => {
+  const [result] = auditRecords([
+    record(),
+    record({ claim_id: "CLM-2", record_type: "clinical" }),
+  ]);
+
+  assert.equal(result.claim_id, null);
+  assert.equal(result.status, "FLAGGED_FOR_HUMAN_REVIEW");
+  assert.equal(result.discrepancies[0].rule_id, "RULE_INCONSISTENT_CLAIM_ID");
+});
+
+test("returns NO_BILLING_RECORDS when an encounter has no billing rows", () => {
+  const [result] = auditRecords([record({ record_type: "clinical" })]);
+
+  assert.equal(result.status, "NO_BILLING_RECORDS");
+  assert.deepEqual(result.discrepancies, []);
+});

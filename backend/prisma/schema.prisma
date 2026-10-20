@@ -7,38 +7,81 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum RecordType {
+  BILLING
+  CLINICAL
+  DIAGNOSTIC
+  PROCEDURE
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum AuditStatus {
+  VERIFIED_CLEAN
+  FLAGGED_FOR_HUMAN_REVIEW
+  NO_BILLING_RECORDS
+
+}
+
+enum ReviewDecision {
+  ACCEPTED
+  REJECTED
+  NEEDS_MORE_INFO
+}
+
 model Claim {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   claimId     String
   patientId   String
   encounterId String
-  createdAt   DateTime      @default(now())
-  records     ClaimRecord[]
-  audits      AuditResult[]
+  createdAt   DateTime @default(now())
+
+  records ClaimRecord[]
+  audits  AuditResult[]
 
   @@unique([claimId, patientId, encounterId])
 }
 
 model ClaimRecord {
-  id           String   @id @default(cuid())
-  claimId      String
-  serviceDate  String
-  recordType   String
-  description  String
-  billedAmount Decimal  @db.Decimal(12, 2)
-  claim        Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  id                  String     @id @default(cuid())
+  claimId             String
+  serviceDate         DateTime   @db.Date
+  recordType          RecordType
+  description         String
+  normalizedDescription String
+  billedAmountCents   Int
+  claim               Claim      @relation(fields: [claimId], references: [id], onDelete: Cascade)
 
   @@index([claimId])
+  @@index([claimId, serviceDate])
 }
 
 model AuditResult {
-  id         String   @id @default(cuid())
-  claimId    String
-  riskLevel  String
-  status     String
-  findings   Json
-  createdAt  DateTime @default(now())
-  claim      Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  claimId       String
+  riskLevel     RiskLevel
+  status        AuditStatus
+  findings      Json
+  rulesVersion  String
+  createdAt     DateTime    @default(now())
+  claim         Claim       @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  reviews       Review[]
 
   @@index([claimId, createdAt])
+}
+
+model Review {
+  id            String         @id @default(cuid())
+  auditId       String
+  reviewerId    String
+  decision      ReviewDecision
+  comment       String?
+  createdAt     DateTime       @default(now())
+  audit         AuditResult    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([auditId])
 }

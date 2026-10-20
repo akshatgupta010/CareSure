@@ -62,7 +62,7 @@ The CSV should contain a header row with these columns:
 | `description` | Service or record description |
 | `billed_amount` | Billed amount as a number |
 
-The frontend normalizes common aliases such as `CLAIM_ID`, `PATIENT`, `ENCOUNTER`, `DATE`, `RECORD_TYPE`, `DESCRIPTION`, and `TOTAL_CLAIM_COST`. Missing values may be filled with defaults, so provide the columns above for meaningful audit results.
+The frontend normalizes common aliases such as `CLAIM_ID`, `PATIENT`, `ENCOUNTER`, `DATE`, `RECORD_TYPE`, `DESCRIPTION`, and `TOTAL_CLAIM_COST`. It reports missing required columns before submission and does not invent missing field values; provide the columns above for meaningful audit results.
 
 An example CSV is included at [`frontend/public/sample_test_claims.csv`](./frontend/public/sample_test_claims.csv). It includes an undocumented billed service and a repeated charge to demonstrate the backend's missing-documentation and duplicate-billing checks.
 
