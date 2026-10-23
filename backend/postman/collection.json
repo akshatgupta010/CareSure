@@ -1,0 +1,319 @@
+{
+  "info": {
+    "name": "CareSure API Postman Collection",
+    "description": "Production-ready automated testing collection for CareSure Claims Verification Engine.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Auth - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.expect(json.success).to.be.true;",
+              "if (json.data && json.data.accessToken) {",
+              "    pm.environment.set(\"accessToken\", json.data.accessToken);",
+              "    pm.collectionVariables.set(\"accessToken\", json.data.accessToken);",
+              "    pm.environment.set(\"tokenExpiry\", Date.now() + 14 * 60 * 1000);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"reviewer@caresure.demo\",\n  \"password\": \"CareSureDemo2026!\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "2. Auth - Get Me",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.expect(json.success).to.be.true;",
+              "pm.expect(json.data.email).to.equal(\"reviewer@caresure.demo\");"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/me"
+      }
+    },
+    {
+      "name": "3. Claims - Create Draft Claim",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.expect(json.success).to.be.true;",
+              "const claimId = (json.data && (json.data._id || json.data.id)) || \"\";",
+              "if (claimId) {",
+              "    pm.environment.set(\"claimId\", claimId);",
+              "    pm.collectionVariables.set(\"claimId\", claimId);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claimNumber\": \"CLM-{{$timestamp}}\",\n  \"patientId\": \"PT-99102\",\n  \"patientName\": \"Aarav Sharma\",\n  \"hospitalName\": \"Max Super Speciality Hospital\",\n  \"encounterId\": \"ENC-88192\",\n  \"admissionDate\": \"2026-10-01\",\n  \"dischargeDate\": \"2026-10-04\",\n  \"diagnosis\": \"Acute appendicitis\",\n  \"procedure\": \"Appendectomy\",\n  \"claimAmount\": 24580000,\n  \"policyNumber\": \"POL-992182\",\n  \"insurer\": \"Care Health Insurance\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/claims"
+      }
+    },
+    {
+      "name": "4. Claims - Get Claim by ID",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const currentClaimId = pm.environment.get(\"claimId\") || pm.collectionVariables.get(\"claimId\");",
+              "if (!currentClaimId) {",
+              "    const baseUrl = pm.environment.get(\"baseUrl\") || pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:5000\";",
+              "    const token = pm.environment.get(\"accessToken\") || pm.collectionVariables.get(\"accessToken\") || \"\";",
+              "    pm.sendRequest({",
+              "        url: baseUrl + \"/api/v1/claims\",",
+              "        method: \"GET\",",
+              "        header: { \"Authorization\": \"Bearer \" + token }",
+              "    }, function (err, res) {",
+              "        if (!err && res.code === 200) {",
+              "            const list = res.json().data;",
+              "            if (list && list.length > 0) {",
+              "                const foundId = list[0].id || list[0]._id;",
+              "                pm.environment.set(\"claimId\", foundId);",
+              "                pm.collectionVariables.set(\"claimId\", foundId);",
+              "            }",
+              "        }",
+              "    });",
+              "}"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.expect(json.success).to.be.true;"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/claims/{{claimId}}"
+      }
+    },
+    {
+      "name": "5. Dashboard - Get Stats",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.expect(json.success).to.be.true;",
+              "pm.expect(json.data.kpis).to.exist;"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/dashboard/stats"
+      }
+    },
+    {
+      "name": "6. Review Queue - Get Pending Claims",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.expect(json.success).to.be.true;",
+              "pm.expect(json.data.counts).to.exist;"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/review-queue/queue"
+      }
+    },
+    {
+      "name": "7. Analytics - Get Overview & Findings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.expect(json.success).to.be.true;",
+              "pm.expect(json.data.signalsByType).to.exist;"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/analytics/overview"
+      }
+    },
+    {
+      "name": "8. Analytics - Get Evaluation Metrics",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.expect(json.success).to.be.true;",
+              "pm.expect(json.data.metrics).to.exist;"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/analytics/evaluation"
+      }
+    },
+    {
+      "name": "9. Auth - Refresh Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200 or 401 (if cookie omitted)\", () => pm.expect([200, 401]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/refresh"
+      }
+    },
+    {
+      "name": "10. Auth - Logout",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/logout"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "claimId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

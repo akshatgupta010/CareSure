@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Uploaded patient files (PHI)
+uploads/
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / Editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
