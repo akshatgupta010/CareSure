@@ -1,0 +1,26 @@
+# ── Generated model artifacts (do not commit) ─────────────────────────────────
+models/*.joblib
+models/*.pkl
+models/synthetic_claims.csv
+models/training_report.json
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# ── Virtual environments ───────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env
+!.env.example
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
