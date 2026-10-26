@@ -5,19 +5,25 @@ Endpoints:
   GET  /health      – Service health and model status
   POST /anomaly     – Isolation Forest anomaly detection
   POST /ml-risk     – Random Forest risk classification
+  POST /extract     – Document extraction / OCR fallback stub
 
 The service is designed to be called by the CareSure Express backend.
-Requests are authenticated via the X-Service-Token header.
+Requests are authenticated via the X-Service-Token header using constant-time comparison.
 Models are loaded once at startup via the lifespan context manager.
 """
 
+import hmac
 import logging
 import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI, HTTPException, Request, status
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request, status, UploadFile, File
 from fastapi.responses import JSONResponse
+
+# Load environment variables (.env in ai-service/ or working directory)
+load_dotenv()
 
 from .model_loader import load_models, models_status
 from .schemas import (
@@ -45,6 +51,7 @@ AI_SERVICE_TOKEN = os.getenv("AI_SERVICE_TOKEN", "")
 def _verify_token(request: Request) -> None:
     """
     Validates the X-Service-Token header against the configured secret.
+    Uses hmac.compare_digest for constant-time comparison to prevent timing attacks.
     Skips validation in development mode (when token is empty).
     """
     if not AI_SERVICE_TOKEN:
@@ -52,7 +59,7 @@ def _verify_token(request: Request) -> None:
         return
 
     incoming = request.headers.get("X-Service-Token", "")
-    if not incoming or incoming != AI_SERVICE_TOKEN:
+    if not incoming or not hmac.compare_digest(incoming, AI_SERVICE_TOKEN):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing X-Service-Token",
@@ -195,6 +202,37 @@ async def ml_risk_endpoint(
         risk_probability=result["risk_probability"],
         risk_level=result["risk_level"],
         top_features=result["top_features"],
+    )
+
+
+@app.post(
+    "/extract",
+    summary="Document extraction fallback endpoint (PRD Section 13)",
+    tags=["OCR"],
+)
+async def extract_endpoint(
+    request: Request,
+    file: UploadFile = File(...),
+) -> JSONResponse:
+    """
+    Extracts text and key clinical/billing entities from uploaded claim documents.
+    Fallback stub conforming to CARESURE_PRD.md Section 13 contract.
+    """
+    _verify_token(request)
+
+    filename = file.filename or "unknown"
+    logger.info("Extraction request for file: %s (content_type=%s)", filename, file.content_type)
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "text": f"Document content from {filename}",
+            "ocr_confidence": 0.92,
+            "fields": {
+                "document_name": {"value": filename, "confidence": 0.95},
+                "status": {"value": "processed", "confidence": 0.90},
+            },
+        },
     )
 
 

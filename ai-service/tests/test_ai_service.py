@@ -297,3 +297,21 @@ class TestScoreBoundaries:
         rules_points = min(100, 40)
         total = min(100, rules_points + ml_points + anomaly_points)
         assert total <= 100
+
+
+# ── Document Extraction Endpoint ──────────────────────────────────────────────
+
+class TestExtractEndpoint:
+    def test_extract_returns_200(self):
+        files = {"file": ("test_doc.pdf", b"%PDF-1.4 sample content", "application/pdf")}
+        resp = client.post("/extract", files=files, headers=AUTH_HEADERS)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "text" in data
+        assert "ocr_confidence" in data
+        assert "fields" in data
+
+    def test_extract_requires_token(self):
+        files = {"file": ("test_doc.pdf", b"%PDF-1.4 sample content", "application/pdf")}
+        resp = client.post("/extract", files=files, headers={"X-Service-Token": "wrong-token"})
+        assert resp.status_code == 401

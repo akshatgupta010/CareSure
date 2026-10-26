@@ -18,6 +18,7 @@ This pipeline is saved as a single joblib artifact.
 
 import logging
 import numpy as np
+import pandas as pd
 from typing import Any
 
 from .model_loader import (
@@ -94,9 +95,9 @@ def classify_risk(
 
     proc_key = _encode_procedure(procedure, encoder)
 
-    # Features must match training column order exactly:
-    #   [proc_key, amount, length_of_stay, items_billed,
-    #    rules_fired, unmatched_ratio, benchmark_ratio, above_benchmark]
+    # Features must match training column names and types exactly:
+    #   ['procedure', 'amount_rupees', 'length_of_stay', 'items_billed',
+    #    'rules_fired', 'unmatched_ratio', 'benchmark_ratio', 'above_benchmark']
     proc_key_lower = proc_key.lower()
     if proc_key_lower in benchmarks:
         bmin, bmax = benchmarks[proc_key_lower]
@@ -107,16 +108,16 @@ def classify_risk(
         benchmark_ratio = 1.0
         above_benchmark = 0.0
 
-    X = [[
-        proc_key,
-        float(amount),
-        float(length_of_stay),
-        float(items_billed),
-        float(rules_fired),
-        float(unmatched_ratio),
-        float(benchmark_ratio),
-        float(above_benchmark),
-    ]]
+    X = pd.DataFrame([{
+        "procedure": proc_key,
+        "amount_rupees": float(amount),
+        "length_of_stay": float(length_of_stay),
+        "items_billed": float(items_billed),
+        "rules_fired": float(rules_fired),
+        "unmatched_ratio": float(unmatched_ratio),
+        "benchmark_ratio": float(benchmark_ratio),
+        "above_benchmark": float(above_benchmark),
+    }])
 
     try:
         prob_array = model.predict_proba(X)[0]
@@ -168,9 +169,8 @@ def _build_feature_explanations(
     We use a heuristic approach: inspect top feature importances and map them
     to the provided input values.
     """
-    # Feature names in training order (matches build above)
     feature_names = [
-        "procedure_type",
+        "procedure",
         "amount_rupees",
         "length_of_stay",
         "items_billed",
