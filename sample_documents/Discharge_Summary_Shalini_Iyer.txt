@@ -1,0 +1,50 @@
+================================================================================
+APOLLO MEDICAL CENTER - CLINICAL DISCHARGE SUMMARY
+================================================================================
+Encounter ID: ENC-4429                     Claim Number: CLM-2026-4429
+Patient Name: Shalini Iyer                  Patient ID: PT-77567
+Age / Gender: 34 Y / Female                 Department: General Surgery
+Date of Admission: 24-Sep-2026              Date of Discharge: 28-Sep-2026
+Primary Insurer: HealthSecure India         Policy Number: POL-44290
+Attending Surgeon: Dr. S. Rao, MS (General Surgery)
+
+1. PRIMARY CLINICAL DIAGNOSIS:
+Acute appendicitis with localized peritonitis (ICD-10: K35.80)
+
+2. SURGICAL PROCEDURE PERFORMED:
+Emergency Laparoscopic Appendectomy (Procedure Code: APP-01)
+Operative Date: 25-Sep-2026 | Anesthesia: General Endotracheal Anesthesia
+
+3. OPERATIVE FINDINGS & SURGICAL SUMMARY:
+Under general anesthesia, infra-umbilical port inserted and pneumoperitoneum established.
+Laparoscopic inspection revealed acutely inflamed, retrocecal appendix with fibrinous
+exudate at the tip. Mesoappendix cauterized and divided. Appendiceal base secured with
+endoloop ligature and transected. Specimen retrieved via endobag. Peritoneal wash given
+with warm saline. Hemostasis confirmed. Skin closure performed with absorbable sutures.
+
+4. DIAGNOSTIC & LABORATORY INVESTIGATIONS:
+- USG Abdomen & Pelvis (24-Sep-2026): Thickened appendix with diameter of 7.8mm.
+- Complete Blood Count (CBC): TLC 14,200/cumm, Neutrophils 84%, Platelets 2.8 Lakhs.
+- Billed CT Scan Abdomen: (₹18,500) - Diagnostic report pending radiology PACS sync.
+
+5. ITEMIZED HOSPITAL CHARGES (TOTAL: ₹2,45,800):
+- Appendectomy Surgical Fee: ₹1,50,000
+- CT Scan Abdomen: ₹18,500
+- IPD Room Charges (4 Days): ₹32,000
+- Pharmacy & Consumables: ₹25,300
+- Anesthesia & Sedation Charges: ₹20,000
+
+6. POST-OPERATIVE COURSE & DISCHARGE ADVICE:
+Patient had an uneventful recovery. Oral intake tolerated well on Day 2.
+Afebrile with stable hemodynamic vitals. Incision sites clean and dry.
+Discharge Medications:
+1. Tab Augmentin 625mg PO BID x 5 days
+2. Tab Zerodol-SP PO BID x 3 days
+3. Tab Pantocid 40mg PO OD before meals x 7 days
+
+Follow-up: Surgical OPD visit after 5 days for wound evaluation.
+
+Certified by:
+Dr. S. Rao, MS (General Surgery), FACS
+Apollo Medical Center
+================================================================================

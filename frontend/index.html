@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareSure — Hospital Revenue Assurance & Claim Verification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Zero-white-flash theme initialization script -->
+    <script>
+      (function() {
+        try {
+          var mode = localStorage.getItem('caresure_theme_mode') || 'light';
+          var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+
+          var custom = localStorage.getItem('caresure_custom_theme');
+          if (custom) {
+            var colors = JSON.parse(custom);
+            if (colors.brandPrimary) document.documentElement.style.setProperty('--brand-primary', colors.brandPrimary);
+            if (colors.bgSurface) document.documentElement.style.setProperty('--bg-surface', colors.bgSurface);
+            if (colors.bgApp) document.documentElement.style.setProperty('--bg-app', colors.bgApp);
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

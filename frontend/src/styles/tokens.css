@@ -1,0 +1,83 @@
+/* CareSure Design Tokens — HSL space-separated values */
+:root, [data-theme="light"] {
+  /* Surfaces */
+  --bg-app: 220 25% 97%;
+  --bg-surface: 0 0% 100%;
+  --bg-subtle: 220 20% 95%;
+  --bg-elevated: 0 0% 100%;
+
+  /* Borders */
+  --border-subtle: 215 20% 90%;
+  --border-strong: 215 20% 80%;
+
+  /* Text & Ink */
+  --text-primary: 222 47% 11%;
+  --text-secondary: 215 25% 27%;
+  --text-muted: 215 16% 47%;
+
+  /* Brand (PRD Section 14.3: #8FA9FF) */
+  --brand-primary: 226 100% 78%;
+  --brand-hover: 226 80% 68%;
+  --brand-subtle: 226 100% 97%;
+  --brand-accent: 199 89% 48%;
+  --text-on-brand: 222 60% 15%; /* Dark ink for WCAG AA contrast */
+
+  /* Semantic Risk Tiers */
+  --risk-low-bg: 147 50% 94%;
+  --risk-low-text: 151 68% 22%;
+  --risk-med-bg: 39 100% 93%;
+  --risk-med-text: 39 100% 27%;
+  --risk-high-bg: 0 85% 95%;
+  --risk-high-text: 358 62% 39%;
+
+  /* Sidebar (Deep medical navy from screenshots 1–3) */
+  --sidebar-bg: 218 64% 11%;
+  --sidebar-border: 218 45% 18%;
+  --sidebar-text: 215 20% 75%;
+  --sidebar-active: 217 91% 60%;
+
+  /* Charts */
+  --chart-green: 155 52% 51%;
+  --chart-amber: 38 86% 62%;
+  --chart-red: 0 72% 69%;
+  --chart-blue: 217 91% 60%;
+  --chart-grid: 220 15% 90%;
+}
+
+[data-theme="dark"] {
+  /* Surfaces */
+  --bg-app: 222 47% 7%;
+  --bg-surface: 222 40% 11%;
+  --bg-subtle: 222 35% 15%;
+  --bg-elevated: 222 35% 18%;
+
+  /* Borders */
+  --border-subtle: 222 25% 18%;
+  --border-strong: 222 25% 26%;
+
+  /* Text & Ink */
+  --text-primary: 210 40% 98%;
+  --text-secondary: 215 20% 75%;
+  --text-muted: 215 16% 55%;
+
+  /* Brand adjustments for Dark Mode */
+  --brand-subtle: 226 50% 18%;
+  --text-on-brand: 222 60% 15%;
+
+  /* Semantic Risk in Dark Mode */
+  --risk-low-bg: 151 50% 14%;
+  --risk-low-text: 147 65% 65%;
+  --risk-med-bg: 39 60% 15%;
+  --risk-med-text: 39 90% 65%;
+  --risk-high-bg: 0 50% 16%;
+  --risk-high-text: 0 85% 75%;
+
+  /* Sidebar */
+  --sidebar-bg: 222 55% 7%;
+  --sidebar-border: 222 35% 14%;
+  --sidebar-text: 215 20% 70%;
+  --sidebar-active: 217 91% 65%;
+
+  /* Charts */
+  --chart-grid: 222 25% 20%;
+}

@@ -105,7 +105,7 @@ const BillingItemSchema = new Schema<IBillingItem>(
     code: { type: String, default: null },
     amount: { type: Number, required: true },
     serviceDate: { type: Date, required: true },
-    encounterId: { type: String, required: true },
+    encounterId: { type: String, required: false },
   },
   { _id: true }
 );
@@ -115,7 +115,7 @@ const ProcedureRecordSchema = new Schema<IProcedureRecord>(
     name: { type: String, required: true },
     code: { type: String, default: null },
     date: { type: Date, required: true },
-    encounterId: { type: String, required: true },
+    encounterId: { type: String, required: false },
   },
   { _id: true }
 );
@@ -125,7 +125,7 @@ const DiagnosticRecordSchema = new Schema<IDiagnosticRecord>(
     testName: { type: String, required: true },
     reportPresent: { type: Boolean, default: true },
     date: { type: Date, required: true },
-    encounterId: { type: String, required: true },
+    encounterId: { type: String, required: false },
   },
   { _id: true }
 );

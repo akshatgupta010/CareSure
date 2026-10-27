@@ -1,23 +1,45 @@
 import { Claim } from '../../models/Claim.js';
+type ClaimFilter = Record<string, any>;
 
 export class DashboardService {
   static async getStats(rangeDays = 30) {
     const sinceDate = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000);
 
+    const verifiedFilter: ClaimFilter = {
+      $or: [
+        { status: { $in: ['Cleared', 'Approved'] } },
+        { 'assessment.band': 'low' },
+      ],
+    };
+
+    const reviewFilter: ClaimFilter = {
+      status: { $nin: ['Cleared', 'Approved'] },
+      'assessment.band': 'review',
+    };
+
+    const highRiskFilter: ClaimFilter = {
+      status: { $nin: ['Cleared', 'Approved'] },
+      'assessment.band': 'high',
+    };
+
+    const pendingFilter: ClaimFilter = {
+      status: { $in: ['Pending Review', 'Draft', 'Documents Requested'] },
+    };
+
     const [
       totalClaims,
       pendingReview,
-      lowRiskCount,
+      verifiedCount,
       reviewRequiredCount,
       highRiskCount,
       assessedClaims,
       recentClaimsRaw,
     ] = await Promise.all([
       Claim.countDocuments(),
-      Claim.countDocuments({ status: 'Pending Review' }),
-      Claim.countDocuments({ 'assessment.band': 'low' }),
-      Claim.countDocuments({ 'assessment.band': 'review' }),
-      Claim.countDocuments({ 'assessment.band': 'high' }),
+      Claim.countDocuments(pendingFilter),
+      Claim.countDocuments(verifiedFilter),
+      Claim.countDocuments(reviewFilter),
+      Claim.countDocuments(highRiskFilter),
       Claim.find(
         {
           'assessment.total': { $ne: null },
@@ -25,7 +47,7 @@ export class DashboardService {
         },
         'assessment'
       ),
-      Claim.find().sort({ createdAt: -1 }).limit(5),
+      Claim.find().sort({ createdAt: -1 }).limit(8),
     ]);
 
     const assessments = assessedClaims.map((c) => c.assessment!).filter(Boolean);
@@ -40,33 +62,62 @@ export class DashboardService {
     const avgAnomaly = Math.round(assessments.reduce((sum, a) => sum + (a.anomalyPoints || 0), 0) / totalAssessed);
     const avgHybrid = Math.round(assessments.reduce((sum, a) => sum + (a.total || 0), 0) / totalAssessed);
 
-    const assessedCount = lowRiskCount + reviewRequiredCount + highRiskCount || 1;
+    const assessedCount = verifiedCount + reviewRequiredCount + highRiskCount || 1;
     const riskDistribution = {
-      low: Math.round((lowRiskCount / assessedCount) * 100),
-      review: Math.round((reviewRequiredCount / assessedCount) * 100),
-      high: Math.round((highRiskCount / assessedCount) * 100),
+      low: { count: verifiedCount, percentage: Math.round((verifiedCount / assessedCount) * 100) },
+      review: { count: reviewRequiredCount, percentage: Math.round((reviewRequiredCount / assessedCount) * 100) },
+      high: { count: highRiskCount, percentage: Math.round((highRiskCount / assessedCount) * 100) },
     };
 
-    const recentClaims = recentClaimsRaw.map((c) => ({
-      id: c._id.toString(),
-      claimNumber: c.claimNumber,
-      patientName: c.patientName,
-      hospitalName: c.hospitalName,
-      claimAmount: c.claimAmount,
-      submittedAt: c.submittedAt || c.createdAt,
-      riskScore: c.assessment?.total ?? null,
-      band: c.assessment?.band ?? null,
-      validation: c.assessment?.validation ?? (c.status === 'Draft' ? 'draft' : 'pending'),
-      status: c.status,
-    }));
+    const recentClaims = recentClaimsRaw.map((c) => {
+      const isApprovedOrCleared = c.status === 'Approved' || c.status === 'Cleared';
+      return {
+        id: c._id.toString(),
+        claimNumber: c.claimNumber,
+        patientName: c.patientName,
+        hospitalName: c.hospitalName,
+        claimAmount: c.claimAmount,
+        submittedAt: c.submittedAt || c.createdAt,
+        riskScore: c.assessment?.total ?? null,
+        band: isApprovedOrCleared ? ('low' as const) : (c.assessment?.band ?? null),
+        validation: isApprovedOrCleared ? ('passed' as const) : (c.assessment?.validation ?? (c.status === 'Draft' ? 'draft' : 'pending')),
+        status: c.status,
+      };
+    });
+
+    // Calculate revenue at risk and recovered from live claims
+    const atRiskFilter: ClaimFilter = {
+      status: { $nin: ['Cleared', 'Approved'] },
+      'assessment.band': { $in: ['review', 'high'] },
+    };
+    const atRiskClaims = await Claim.find(atRiskFilter, 'claimAmount');
+    const totalAtRiskPaise = atRiskClaims.reduce((sum, c) => sum + (c.claimAmount || 0), 0);
+
+    const clearedFilter: ClaimFilter = {
+      status: { $in: ['Cleared', 'Approved'] },
+    };
+    const clearedClaims = await Claim.find(clearedFilter, 'claimAmount');
+    const totalRecoveredPaise = clearedClaims.reduce((sum, c) => sum + (c.claimAmount || 0), 0);
 
     return {
       kpis: {
+        total: totalClaims,
         totalClaims: { value: totalClaims, delta: '+12%' },
-        pendingReview: { value: pendingReview, delta: '-5%' },
-        lowRisk: { value: lowRiskCount, delta: '+18%' },
-        reviewRequired: { value: reviewRequiredCount + highRiskCount, delta: '-8%' },
-        avgProcessingSeconds: { value: parseFloat(avgProcessingSeconds), delta: '-15%' },
+        pendingReview,
+        verified: verifiedCount,
+        lowRisk: verifiedCount,
+        reviewRequired: reviewRequiredCount,
+        highRisk: highRiskCount,
+        avgProcessingSeconds: parseFloat(avgProcessingSeconds),
+        revenueAtRiskPaise: totalAtRiskPaise,
+        revenueRecoveredPaise: totalRecoveredPaise,
+        deltas: {
+          totalDelta: 12,
+          pendingDelta: -5,
+          lowRiskDelta: 18,
+          reviewDelta: -8,
+          processingDelta: -15,
+        },
       },
       riskDistribution,
       insights: {
@@ -74,6 +125,10 @@ export class DashboardService {
         ml: avgMl,
         anomaly: avgAnomaly,
         hybrid: avgHybrid,
+        rulesPointsAvg: avgRules,
+        mlPointsAvg: avgMl,
+        anomalyPointsAvg: avgAnomaly,
+        hybridScoreAvg: avgHybrid,
       },
       recentClaims,
     };

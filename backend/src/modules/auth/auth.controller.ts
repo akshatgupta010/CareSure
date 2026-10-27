@@ -16,6 +16,25 @@ function getCookieOptions() {
 }
 
 export class AuthController {
+  static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { name, email, password, role, team } = req.body;
+      const { accessToken, refreshToken, user } = await AuthService.register(name, email, password, role, team);
+
+      res.cookie(REFRESH_COOKIE_NAME, refreshToken, getCookieOptions());
+
+      res.status(201).json({
+        success: true,
+        data: {
+          accessToken,
+          user,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password } = req.body;

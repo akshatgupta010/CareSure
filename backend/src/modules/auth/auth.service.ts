@@ -105,6 +105,61 @@ export class AuthService {
     };
   }
 
+  static async register(name: string, email: string, passwordPlain: string, role = 'reviewer', team = 'Claims Team') {
+    const existing = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existing) {
+      throw new AppError('CONFLICT', 409, 'An account with this email already exists');
+    }
+
+    const passwordHash = await bcrypt.hash(passwordPlain, 10);
+    const user = await User.create({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      role: role === 'admin' ? 'admin' : 'reviewer',
+      team: team || 'Claims Team',
+      passwordHash,
+    });
+
+    const familyId = crypto.randomUUID();
+    const tokenPayload = {
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      team: user.team,
+    };
+
+    const accessToken = signAccessToken(tokenPayload);
+    const refreshToken = signRefreshToken({ ...tokenPayload, familyId });
+
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await RefreshToken.create({
+      userId: user._id,
+      familyId,
+      tokenHash: hashToken(refreshToken),
+      expiresAt,
+    });
+
+    await logAudit({
+      actorId: user._id.toString(),
+      actorEmail: user.email,
+      action: 'auth.register',
+      entity: 'User',
+      entityId: user._id.toString(),
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        team: user.team,
+      },
+    };
+  }
+
   static async refresh(incomingToken: string) {
     if (!incomingToken) {
       throw new AppError('UNAUTHORIZED', 401, 'Refresh token required');

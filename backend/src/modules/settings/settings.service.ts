@@ -1,4 +1,5 @@
 import { Setting } from '../../models/Setting.js';
+import { Claim } from '../../models/Claim.js';
 import { AppError } from '../../utils/errors.js';
 import { logAudit } from '../../services/audit.js';
 import { DEFAULT_THRESHOLDS, ScoringThresholds } from '../../services/scoring.js';
@@ -35,13 +36,35 @@ export class SettingsService {
       { upsert: true, returnDocument: 'after' }
     );
 
+    // Dynamically reclassify all active (non-approved/non-cleared) claims based on new cutoffs
+    const activeClaims = await Claim.find({
+      status: { $nin: ['Cleared', 'Approved'] },
+      'assessment.total': { $ne: null },
+    });
+
+    for (const c of activeClaims) {
+      if (c.assessment && c.assessment.total != null) {
+        if (c.assessment.total <= updated.lowMax) {
+          c.assessment.band = 'low';
+          c.assessment.validation = 'passed';
+        } else if (c.assessment.total <= updated.reviewMax) {
+          c.assessment.band = 'review';
+          c.assessment.validation = 'warnings';
+        } else {
+          c.assessment.band = 'high';
+          c.assessment.validation = 'failed';
+        }
+        await c.save();
+      }
+    }
+
     await logAudit({
       actorId,
       actorEmail,
       action: 'settings.update_thresholds',
       entity: 'Setting',
       entityId: 'thresholds',
-      meta: { thresholds: updated },
+      meta: { thresholds: updated, reclassifiedClaims: activeClaims.length },
     });
 
     return updated;

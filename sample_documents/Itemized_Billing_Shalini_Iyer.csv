@@ -1,0 +1,6 @@
+service,code,amount,date,encounterId
+Appendectomy Surgical Fee,APP-01,150000,2026-09-25,ENC-4429
+CT Scan Abdomen,CT-ABD,18500,2026-09-24,ENC-4429
+IPD Room Charges (4 Days),ROOM-IPD,32000,2026-09-28,ENC-4429
+Pharmacy & Surgical Consumables,PHARM-SURG,25300,2026-09-27,ENC-4429
+Anesthesia & Sedation Charges,ANES-GEN,20000,2026-09-25,ENC-4429

@@ -1,13 +1,24 @@
 import { RuleContext, RuleFinding } from './types.js';
 
+const ALIASES: Record<string, string[]> = {
+  'appendectomy': ['appendicectomy', 'laparoscopic appendectomy'],
+  'cholecystectomy': ['laparoscopic cholecystectomy', 'lap chole', 'open cholecystectomy'],
+  'hernia repair': ['inguinal hernia', 'umbilical hernia', 'herniorrhaphy', 'hernioplasty'],
+  'knee replacement': ['total knee replacement', 'total knee arthroplasty', 'knee arthroplasty', 'tka'],
+  'cesarean delivery': ['cesarean section', 'c-section', 'lscs'],
+  'normal delivery': ['vaginal delivery', 'normal spontaneous delivery'],
+};
+
 export function evaluateR03(ctx: RuleContext): RuleFinding | null {
   const procedureNorm = ctx.claim.procedure.toLowerCase().trim();
   const tolerance = (ctx.tolerancePercent ?? 10) / 100; // default 10%
 
-  // Find expected range for procedure
+  // Find expected range for procedure with synonym/alias resolution
   const range = ctx.expectedRanges.find((r) => {
     const key = r.procedureKey.toLowerCase().trim();
-    return procedureNorm.includes(key) || key.includes(procedureNorm);
+    if (procedureNorm.includes(key) || key.includes(procedureNorm)) return true;
+    const aliases = ALIASES[key] || [];
+    return aliases.some((a) => procedureNorm.includes(a) || a.includes(procedureNorm));
   });
 
   if (!range) {
