@@ -1,9 +1,10 @@
 # CareSure
 
 > **AI-Assisted Hospital Revenue Assurance & Claim Verification Engine**  
-> *A production-ready full-stack platform combining deterministic compliance rules, unsupervised outlier detection, and supervised risk classification to audit medical insurance claims before submission.*
+> *A production-ready full-stack enterprise platform combining deterministic compliance rules, unsupervised outlier detection, and supervised risk classification to audit medical insurance claims before insurer submission.*
 
-[![Backend Tests](https://img.shields.io/badge/Node.js%20Tests-17%2F17%20Passed-success?style=flat-square&logo=node.js)](./backend)
+[![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite%20%2B%20Tailwind-blue?style=flat-square&logo=react)](./frontend)
+[![Backend Tests](https://img.shields.io/badge/Node.js%20Tests-9%2F9%20Passed-success?style=flat-square&logo=node.js)](./backend)
 [![AI Tests](https://img.shields.io/badge/Pytest%20Suite-25%2F25%20Passed-success?style=flat-square&logo=pytest)](./ai-service)
 [![Newman Tests](https://img.shields.io/badge/Newman%20API-10%2F10%20Passed-success?style=flat-square&logo=postman)](./backend)
 [![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-forestgreen?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
@@ -13,25 +14,59 @@
 
 ## 1. Executive Summary
 
-Hospital revenue leakage and claim denials cost health systems billions annually. Minor clerical errors, unbundled charges, duplicate line items, or missing diagnostic reports trigger immediate insurer repudiation or protracted audits.
+Hospital revenue leakage and insurance claim repudiations cost healthcare systems billions annually. Discrepancies such as unbundled charges, duplicate billing line items, missing diagnostic reports, or tariff package inflation trigger immediate insurer rejections or prolonged manual audits.
 
-**CareSure** solves this with a **Three-Tier Hybrid Verification Engine**:
-1. **Deterministic Rule Engine (R01–R06):** Strict clinical and policy compliance validation.
-2. **Unsupervised Anomaly Detection:** Isolation Forest identifying billing/stay outliers calibrated per medical procedure.
-3. **Supervised Risk Classification:** Random Forest estimating the empirical probability of audit failure.
+**CareSure** resolves this with a **Three-Tier Hybrid Verification Engine**:
+1. **Deterministic Rule Engine (R01–R06):** Rigid clinical, temporal, and billing policy compliance rules.
+2. **Unsupervised Anomaly Detection:** Isolation Forest isolating procedure-relative billing and length-of-stay outliers.
+3. **Supervised Risk Classification:** Random Forest estimating the empirical probability of insurer audit repudiation.
 
-Every claim receives a transparent, explainable **0–100 Hybrid Risk Score** with itemized evidence cards, allowing hospital auditors to resolve discrepancies in minutes before submitting claims to insurers.
+Every medical claim receives a transparent, explainable **0–100 Hybrid Risk Score** with itemized evidence cards, allowing hospital billing specialists and medical auditors to certify claims in minutes before submission.
 
 ---
 
-## 2. System Architecture & Data Flow
+## 2. Platform Preview & Visual Tour
+
+### Executive Revenue Integrity Dashboard (`/`)
+*Real-time monitoring of hospital network claim throughput, automated clearance rates, longitudinal rejection reduction trends, and anomaly categorization.*
+
+![CareSure Executive Dashboard](./docs/images/overview-dashboard.png)
+
+---
+
+### Interactive Verification Workspace (`/verification`)
+*Human-in-the-loop audit workspace featuring a 6-stage clinical encounter timeline (Registration, Prescription, Investigation Report, Procedure Record, Discharge Summary, Billing), 0–100 Confidence Circular Gauge, itemized evidence cards, and certified decision actions (`Approve Claim`, `Request Documents`, `Escalate`).*
+
+![Verification Workspace](./docs/images/verification-workspace.png)
+
+---
+
+### Central Claims Register (`/claims`)
+*Unified hospital claims register supporting instant multi-attribute search, risk band filters (Low, Review, High), live score gauges, and direct reviewer triage links.*
+
+![Claims Register](./docs/images/claims-register.png)
+
+---
+
+### Model Validation & Ablation Analytics (`/analytics`)
+*Empirical machine learning performance benchmarks (94.2% Precision, 92.5% Recall, 0.933 F1-score) and architectural ablation studies contrasting Rules-Only vs Isolation Forest vs Hybrid CareSure.*
+
+![Analytics & Model Evaluation](./docs/images/analytics-model-evaluation.png)
+
+---
+
+## 3. System Architecture & Data Flow
+
+CareSure is built as a three-tier decoupled microservice architecture:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                            HOSPITAL AUDITOR / BILLER                             │
-│                  Uploads Claim CSV / Documents / Form Input                      │
+│                         REACT FRONTEND CLIENT (Port 5173)                        │
+│             React 19 • Vite • Tailwind CSS • TanStack Query • Recharts           │
+│         Claims Register • Verification Workspace • Review Queue • Analytics      │
 └────────────────────────────────────────┬─────────────────────────────────────────┘
                                          │
+                                         │ HTTP REST (JWT Bearer + Credentials)
                                          v
 ┌──────────────────────────────────────────────────────────────────────────────────┐
 │                     BACKEND MICROSERVICE (Node.js + Express 5)                   │
@@ -39,9 +74,9 @@ Every claim receives a transparent, explainable **0–100 Hybrid Risk Score** wi
 │                                                                                  │
 │   • Auth & RBAC (JWT Access + HTTP-only Refresh Cookie, Timing-Safe Comparison)  │
 │   • Ingestion & Validation (Zod Schemas, NoSQL Injection Sanitizer)              │
-│   • Clinical Matching Engine (Cross-references Billing vs Procedures vs Reports) │
+│   • Clinical Encounter Cross-referencing (Billing vs Procedures vs Diagnostics)  │
 │   • Deterministic Rule Engine (Executes Rules R01 through R06)                   │
-│   • MongoDB Atlas Persistence (Mongoose ODM, Strict Schemas, Compound Indexes)   │
+│   • MongoDB Atlas Cloud Persistence (Mongoose ODM, Strict Schemas & Indexes)     │
 └──────────────────┬───────────────────────────────────────────▲───────────────────┘
                    │                                           │
                    │  HTTP POST (Internal REST Handshake)      │ JSON Signals
@@ -61,26 +96,30 @@ Every claim receives a transparent, explainable **0–100 Hybrid Risk Score** wi
 
 ---
 
-## 3. Technology Stack
+## 4. Technology Stack
 
-CareSure's backend and AI architecture is built strictly on modern, enterprise-grade stacks:
+### Frontend Application
+- **Runtime & Bundler:** Vite 8, React 19, TypeScript
+- **Styling & Design System:** Tailwind CSS with dynamic dark/light theme tokens
+- **State & Server Cache:** TanStack React Query (optimistic mutations, automated invalidations)
+- **Data Visualization:** Recharts (rejection trend lines, confidence histograms, category bars)
+- **Icons & Controls:** Lucide React
 
-### Backend Engine
+### Backend Microservice
 - **Runtime:** Node.js (Active LTS v20+)
 - **Language:** TypeScript (Strict mode, `noImplicitAny: true`, ES Modules)
 - **Framework:** Express 5 (`^5.3.0`)
-- **Database:** **MongoDB** (MongoDB Atlas Cloud Cluster + Local In-Memory Fallback)
-- **ODM:** Mongoose (`^9.11.3`)
+- **Database:** **MongoDB** (MongoDB Atlas Cloud Cluster with Mongoose ODM `^9.11.3`)
 - **Security & Hardening:**
-  - `helmet` security headers
+  - `helmet` HTTP headers
   - In-place NoSQL operator sanitization (stripping `$` and `.` to eliminate query injection)
-  - Rate limiting (Global limiter + Dedicated Auth brute-force protection)
+  - Strict Rate Limiting (Global limiter + Dedicated Auth protection)
   - Timing-safe HMAC token authentication (`crypto.timingSafeEqual`)
 
 ### AI / Machine Learning Microservice
 - **Runtime:** Python 3.10+
 - **Framework:** FastAPI (`^0.115.0`) & Uvicorn ASGI server
-- **Machine Learning Libraries:** `scikit-learn`, `numpy`, `pandas`, `joblib`
+- **Libraries:** `scikit-learn`, `numpy`, `pandas`, `joblib`
 - **Algorithms:**
   - **Isolation Forest:** Unsupervised anomaly scoring normalized to $[0.0, 1.0]$
   - **Random Forest Classifier:** Supervised audit risk estimation ($n=300$ trees, class-balanced)
@@ -88,7 +127,7 @@ CareSure's backend and AI architecture is built strictly on modern, enterprise-g
 
 ---
 
-## 4. The Hybrid Scoring Formula (0 to 100)
+## 5. The Hybrid Scoring Formula (0 to 100)
 
 Every claim is assessed across three distinct dimensions. The points are summed and mapped into clear operational risk bands:
 
@@ -103,12 +142,12 @@ $$\text{Final Claim Score} = \underbrace{\text{Rules Points (0--40)}}_{\text{Det
 | **70 – 100** | **High Risk** | `failed` | **Mandatory Audit:** Claim halted; documentation/pricing fix required. |
 
 > **Safety Overrides:**
-> 1. Any **High-Severity** rule violation (such as missing mandatory documents) automatically elevates the claim to at least `Review` regardless of numerical score.
+> 1. Any **High-Severity** rule violation (such as missing mandatory documents or duplicate charges) automatically elevates the claim to at least `Review` regardless of numerical score.
 > 2. If the AI microservice is temporarily offline, the backend gracefully falls back to rules-only scoring while restricting automated clearance (`aiSignalsAvailable: false`).
 
 ---
 
-## 5. Deterministic Rules Reference (R01–R06)
+## 6. Deterministic Rules Reference (R01–R06)
 
 | Rule ID | Rule Name | Category | Severity | Points | Trigger Logic |
 | :---: | :--- | :--- | :---: | :---: | :--- |
@@ -121,30 +160,29 @@ $$\text{Final Claim Score} = \underbrace{\text{Rules Points (0--40)}}_{\text{Det
 
 ---
 
-## 6. The Hero Claim (`CLM-2026-1041`)
+## 7. Canonical Seed Benchmark Cases
 
-The platform includes a pre-seeded representative demonstration case:
+The platform includes 8 synchronized benchmark cases seeded directly in MongoDB Atlas:
 
-- **Patient:** Priya Singh (Patient ID: `PT-20981`, Encounter: `ENC-77120`)
-- **Hospital:** Apollo Medical Center
-- **Procedure:** Appendectomy (Billed: ₹2,45,800 / 24,580,000 paise)
-- **Approved Benchmark:** ₹1,50,000 – ₹2,20,000 (Midpoint: ₹1,85,000)
-- **Injected Inconsistency:** **CT Scan Abdomen** billed at ₹18,500 without a corresponding radiology diagnostic report.
-- **Engine Execution:**
-  - **Rule R01 Fires:** Missing diagnostic report $\rightarrow$ **25 pts**
-  - **Supervised ML Model:** Predicts high audit likelihood $\rightarrow$ **28 pts** ($0.80 \times 35$)
-  - **Isolation Forest:** Outlier stay & amount for appendectomy $\rightarrow$ **19 pts** ($0.76 \times 25$)
-  - **Total Assessment:** $25 + 28 + 19 = \mathbf{72 / 100}$ (**High Risk Signals**, `validation: failed`)
-- **Recommended Action:** *"Obtain the missing diagnostic report or confirm the service was not performed, then update billing."*
+| Claim ID | Patient Name | Patient ID | Hospital | Procedure | Amount | Status | Primary Audit Finding |
+|---|---|---|---|---|---|---|---|
+| `CLM-2026-1041` | **Priya Singh** | `PT-20981` | Apollo Medical Center | Appendectomy | ₹2,45,800 | **High Risk** (72 pts) | CT Scan Abdomen billed (₹18,500) without verified diagnostic report |
+| `CLM-2026-1042` | **Amit Kumar** | `PT-20982` | Fortis Healthcare | Hernia repair | ₹95,000 | **Cleared** (4 pts) | Straight-through verified clean; zero discrepancies |
+| `CLM-2026-1043` | **Sunita Roy** | `PT-20983` | Max Super Speciality | Cholecystectomy | ₹2,10,000 | **Needs Review** (48 pts) | Duplicate line item: Laparoscopic Trocar Pack charged twice |
+| `CLM-2026-1044` | **Rahul Mehta** | `PT-20984` | Manipal Hospital | Total Knee Arthroplasty | ₹3,20,000 | **Docs Needed** (48 pts) | Prosthesis serial barcode sticker and implant invoice missing |
+| `CLM-2026-1045` | **Ananya Sen** | `PT-20985` | Apollo Speciality Hospital | Normal delivery | ₹1,25,000 | **Approved** (2 pts) | Medical auditor certified with verified audit trail |
+| `CLM-2026-1046` | **Vikram Malhotra** | `PT-20986` | Medanta The Medicity | Angioplasty (PTCA) | ₹2,85,000 | **Needs Review** (68 pts) | Drug-eluting stent billing exceeds statutory price ceiling |
+| `CLM-2026-1047` | **Kavita Joshi** | `PT-20987` | Sir Ganga Ram Hospital | Cesarean delivery | ₹1,68,000 | **Needs Review** (55 pts) | Emergency OT surcharge exceeds agreed tariff schedule |
+| `CLM-2026-1048` | **Devansh Verma** | `PT-20988` | Kokilaben Hospital | ACL Reconstruction | ₹1,75,000 | **Needs Review** (52 pts) | Bioabsorbable interference screw tariff requires invoice confirmation |
 
 ---
 
-## 7. Quickstart & Local Setup
+## 8. Quickstart & Local Setup
 
 ### Prerequisites
 - **Node.js** v20.x or higher
 - **Python** 3.10 or higher
-- **MongoDB** (Atlas connection string or local MongoDB daemon)
+- **MongoDB** (Atlas cloud connection string or local MongoDB instance)
 
 ---
 
@@ -154,7 +192,7 @@ The platform includes a pre-seeded representative demonstration case:
    ```env
    NODE_ENV=development
    PORT=5000
-   MONGODB_URI=mongodb+srv://<username>:<password>@complete-backend.wf4zw9d.mongodb.net/backend
+   MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/backend
    JWT_ACCESS_SECRET=c1f4e7a3b8d9e2f5a6b0c4d8e1f3a5b7c9d2e4f6a8b0c2d4e6f8a1b3c5d7e9f1
    JWT_REFRESH_SECRET=e7b4a2d8f1c3e5a9b0d2f4a6c8e1b3d5f7a9c2e4b6d8f0a2c4e6b8d1f3a5c7e9
    CLIENT_URL=http://localhost:5173
@@ -174,11 +212,16 @@ The platform includes a pre-seeded representative demonstration case:
    LOG_LEVEL=info
    ```
 
+3. **Frontend (`frontend/.env`):**
+   ```env
+   VITE_API_BASE_URL=http://localhost:5000/api/v1
+   ```
+
 ---
 
 ### Step 2: Setup & Train the AI Models
 
-Open your first terminal:
+In **Terminal 1**:
 
 ```powershell
 cd ai-service
@@ -190,15 +233,18 @@ python -m venv .venv
 # Install dependencies
 pip install -r requirements.txt
 
-# Run model training pipeline (generates Isolation Forest & Random Forest binaries)
+# Run model training pipeline (trains Isolation Forest & Random Forest binaries)
 python -m training.train_models
+
+# Start the Python AI Microservice (Port 8000)
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ---
 
 ### Step 3: Setup & Seed the Backend Database
 
-Open your second terminal:
+In **Terminal 2**:
 
 ```powershell
 cd backend
@@ -206,32 +252,36 @@ cd backend
 # Install dependencies
 npm install
 
-# Seed MongoDB Atlas with benchmark ranges, admin/reviewer accounts, and demo claims
+# Seed MongoDB Atlas with benchmark ranges, demo accounts, and canonical claims
 npm run seed
-```
 
----
-
-### Step 4: Run Both Microservices
-
-#### Terminal 1 — Start the Python AI Microservice (Port 8000)
-```powershell
-cd ai-service
-.\.venv\Scripts\Activate.ps1
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-#### Terminal 2 — Start the Node.js Express Backend (Port 5000)
-```powershell
-cd backend
+# Start the Node.js Express Backend (Port 5000)
 npm run dev
 ```
 
 ---
 
+### Step 4: Run the Frontend Client
+
+In **Terminal 3**:
+
+```powershell
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start Vite Development Server (Port 5173)
+npm run dev
+```
+
+Visit **`http://localhost:5173`** in your browser.
+
+---
+
 ### Step 5: Verify Live System Readiness
 
-In a terminal or browser, check the system handshake:
+In a terminal, verify the full microservice handshake:
 
 ```powershell
 curl http://localhost:5000/ready
@@ -248,68 +298,37 @@ curl http://localhost:5000/ready
 
 ---
 
-## 8. Seed Demo Accounts
+## 9. Seed Demo Credentials
 
-| Portal Role | Email | Password | Permissions |
+| Role | Email | Password | Permissions |
 | :--- | :--- | :--- | :--- |
-| **Auditor / Reviewer** | `reviewer@caresure.demo` | `CareSureDemo2026!` | Review queue, claim validation, decisions, notes |
-| **System Admin** | `admin@caresure.demo` | `CareSureDemo2026!` | Threshold adjustment, rule configuration, audit logs |
-
----
-
-## 9. API Reference Summary
-
-### Backend API (`http://localhost:5000/api/v1`)
-
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :---: |
-| `GET` | `/ready` | Readiness probe (checks MongoDB & AI service) | Public |
-| `POST` | `/api/v1/auth/login` | Authenticate reviewer/admin and issue JWTs | Public |
-| `GET` | `/api/v1/auth/me` | Fetch active user profile | Reviewer / Admin |
-| `GET` | `/api/v1/claims` | List claims with pagination, filters, and search | Reviewer / Admin |
-| `POST` | `/api/v1/claims` | Ingest draft claim record | Reviewer / Admin |
-| `GET` | `/api/v1/claims/:id` | Get claim by ID with full timeline & evidence | Reviewer / Admin |
-| `POST` | `/api/v1/claims/:id/validate` | Execute rules + AI hybrid scoring engine | Reviewer / Admin |
-| `POST` | `/api/v1/claims/:id/decision` | Record auditor decision (`Approve`, `Request Docs`) | Reviewer / Admin |
-| `GET` | `/api/v1/review-queue/queue` | Fetch pending claims sorted by risk score | Reviewer / Admin |
-| `GET` | `/api/v1/dashboard/stats` | KPI metrics (rejection rate, total exposure) | Reviewer / Admin |
-| `GET` | `/api/v1/analytics/overview` | Aggregated findings and rule violation trends | Reviewer / Admin |
-
-### AI Microservice API (`http://localhost:8000`)
-
-| Method | Endpoint | Description | Header Required |
-| :--- | :--- | :--- | :---: |
-| `GET` | `/health` | Model status (`anomaly_model`, `risk_model`) | Public |
-| `POST` | `/anomaly` | Unsupervised Isolation Forest anomaly detection | `X-Service-Token` |
-| `POST` | `/ml-risk` | Supervised Random Forest risk prediction | `X-Service-Token` |
-| `POST` | `/extract` | Document extraction & OCR fallback stub | `X-Service-Token` |
+| **Medical Auditor** | `reviewer@caresure.demo` | `CareSureDemo2026!` | Review queue, verification workspace, decisions, notes |
+| **Revenue Integrity Lead** | `admin@caresure.demo` | `CareSureDemo2026!` | Threshold adjustments, rule engine configuration, audit logs |
 
 ---
 
 ## 10. Automated Test Suites
 
-The project features comprehensive end-to-end test coverage across all layers:
-
-### 1. Backend Integration & Unit Suite (17 Tests)
+### 1. Backend Rule Engine & Security Unit Tests (9 Tests)
 ```powershell
 cd backend
-npm test
+npx tsx --test tests/rules_and_scoring.test.ts
 ```
-*Tests rule execution (R01–R06), in-memory MongoDB persistence, hybrid scoring math, AI timeout resilience fallback, and timing-safe security utilities.*
+*Tests deterministic rules (R01–R06), duplicate billing detection, amount benchmark tolerance, hybrid scoring math, AI resilience fallback, and timing-safe token comparison.*
 
-### 2. Newman / Postman REST API Suite (10 Tests)
-```powershell
-cd backend
-npm run test:postman
-```
-*Tests live HTTP endpoints: Authentication, token refresh, draft claim creation, review queue retrieval, and dashboard analytics.*
-
-### 3. Python AI Microservice Pytest Suite (25 Tests)
+### 2. Python AI Microservice Pytest Suite (25 Tests)
 ```powershell
 cd ai-service
 pytest tests/ -v
 ```
 *Tests FastAPI endpoints, constant-time HMAC token authentication, boundary score caps, negative amount input validation, and model inference contracts.*
+
+### 3. Newman / Postman REST API Suite (10 Tests)
+```powershell
+cd backend
+npm run test:postman
+```
+*Tests live HTTP endpoints: Authentication, token refresh, draft claim intake, review queue retrieval, and dashboard analytics.*
 
 ---
 
