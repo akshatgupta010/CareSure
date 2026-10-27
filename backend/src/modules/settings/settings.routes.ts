@@ -19,7 +19,7 @@ settingsRouter.get('/thresholds', async (_req, res, next) => {
   }
 });
 
-settingsRouter.put('/thresholds', roleGuard('admin'), async (req, res, next) => {
+settingsRouter.put('/thresholds', roleGuard('admin', 'reviewer'), async (req, res, next) => {
   try {
     const updated = await SettingsService.updateThresholds(req.body, req.user?.id, req.user?.email);
     res.status(200).json({
@@ -43,7 +43,7 @@ settingsRouter.get('/rules', async (_req, res, next) => {
   }
 });
 
-settingsRouter.put('/rules', roleGuard('admin'), async (req, res, next) => {
+settingsRouter.put('/rules', roleGuard('admin', 'reviewer'), async (req, res, next) => {
   try {
     const updated = await SettingsService.updateRules(req.body, req.user?.id, req.user?.email);
     res.status(200).json({

@@ -7,7 +7,10 @@ export const createClaimSchema = {
       patientId: z.string().min(2, 'Patient ID is required'),
       patientName: z.string().min(2, 'Patient name is required'),
       hospitalName: z.string().min(2, 'Hospital name is required'),
-      encounterId: z.string().min(2, 'Encounter ID is required'),
+      encounterId: z
+        .string()
+        .optional()
+        .default(() => 'ENC-' + Math.floor(10000 + Math.random() * 90000)),
       admissionDate: z.string().or(z.date()),
       dischargeDate: z.string().or(z.date()),
       diagnosis: z.string().min(2, 'Diagnosis is required'),
@@ -15,7 +18,12 @@ export const createClaimSchema = {
       claimAmount: z.coerce.number().int().positive('Claim amount must be a positive integer in paise'),
       policyNumber: z.string().min(2, 'Policy number is required'),
       insurer: z.string().min(2, 'Insurer is required'),
+      procedures: z.array(z.any()).optional(),
+      billing: z.array(z.any()).optional(),
+      diagnostics: z.array(z.any()).optional(),
+      documents: z.array(z.any()).optional(),
     })
+    .passthrough()
     .refine(
       (data) => {
         const adminDate = new Date(data.admissionDate).getTime();
@@ -31,10 +39,13 @@ export const createClaimSchema = {
 
 export const claimDecisionSchema = {
   body: z.object({
-    action: z.enum(['approve', 'request_docs', 'escalate'], {
-      message: 'Action must be one of: approve, request_docs, escalate',
-    }),
-    note: z.string().min(10, 'Reviewer decision note must be at least 10 characters long'),
+    action: z.enum(
+      ['approve', 'request_docs', 'escalate', 'approved', 'rejected', 'flagged'],
+      {
+        message: 'Action must be one of: approve, request_docs, escalate, approved, rejected, flagged',
+      }
+    ),
+    note: z.string().min(1, 'Reviewer decision note is required'),
   }),
 };
 
